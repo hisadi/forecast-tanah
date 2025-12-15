@@ -1,0 +1,110 @@
+{
+  "target_col": "harga",
+  "numeric_feats": [
+    "latitude",
+    "longitude",
+    "jarak_ke_jalan",
+    "luas",
+    "jarak_cbd"
+  ],
+  "onehot_feats": [
+    "sumber_data",
+    "dokumen_kepemilikan",
+    "jenis_transaksi",
+    "kontur",
+    "elavasi",
+    "pemanfaatan_sekitar",
+    "kontruksi_jalan",
+    "kondisi_jalan"
+  ],
+  "freq_feats": [],
+  "addr_feats": [
+    "provinsi",
+    "kota_kabupaten",
+    "nama_cbd"
+  ],
+  "top_n_addr": 40,
+  "ohe_categories": {
+    "sumber_data": [
+      "Eksternal",
+      "Internal"
+    ],
+    "dokumen_kepemilikan": [
+      "AJB",
+      "Girik",
+      "HGB",
+      "Keterangan Desa/Lurah/Camat",
+      "Lain-lain",
+      "Lain-lain (AJB&Girik)",
+      "Lainnya",
+      "PJB Lunas",
+      "PPJB",
+      "SHGB",
+      "SHM",
+      "SHP",
+      "Surat Ijo"
+    ],
+    "jenis_transaksi": [
+      "Penawaran Akhir/Harga Pas",
+      "Penawaran Awal/Nego",
+      "Penawaran Menengah/Nego Tipis",
+      "Transaksi Jual Beli"
+    ],
+    "kontur": [
+      "Bergelombang",
+      "Datar",
+      "Miring-Mendaki",
+      "Miring-Menurun",
+      "Terasering",
+      "menurun"
+    ],
+    "elavasi": [
+      "Lebih Rendah",
+      "Lebih Tinggi",
+      "Sama Dengan Jalan",
+      "sama dengan jalan"
+    ],
+    "pemanfaatan_sekitar": [
+      "Campuran",
+      "Industrial",
+      "Komersial",
+      "Lainnya",
+      "Perkantoran",
+      "Perkebunan",
+      "Pertanian",
+      "Residensial",
+      "campuran",
+      "komersial",
+      "komersial ",
+      "residensial"
+    ],
+    "kontruksi_jalan": [
+      "Aspal",
+      "Beton",
+      "Lainnya",
+      "Pasir Batu(Sirtu)",
+      "Paving",
+      "Rabat",
+      "Tanah",
+      "aspal",
+      "beton",
+      "paving gang"
+    ],
+    "kondisi_jalan": [
+      "Baik",
+      "Jelek/Rusak",
+      "Sedang",
+      "baik",
+      "cukup"
+    ]
+  },
+  "freq_top_values": {},
+  "algo": "RandomForest",
+  "params": {
+    "n_estimators": 600,
+    "max_depth": null,
+    "max_features": "sqrt",
+    "min_samples_split": 2,
+    "min_samples_leaf": 1
+  }
+}
