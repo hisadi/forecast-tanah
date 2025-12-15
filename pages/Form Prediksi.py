@@ -188,13 +188,98 @@ def pick_cbd_jakarta(lat, lon):
 # ---------- Address dropdown tree ----------
 MANUAL_LABEL = "Manual… (ketik sendiri)"
 ADDR_TREE = {
-    # (Data alamat sama seperti sebelumnya, dipersingkat di sini untuk efisiensi view. 
-    #  Asumsikan data ADDR_TREE lengkap ada di sini)
     "DKI Jakarta": {
-        "Jakarta Pusat": { "Gambir": ["Gambir"], "Menteng": ["Menteng"] }, # Sample, gunakan data lengkap Anda
-        "Jakarta Selatan": { "Kebayoran Baru": ["Senayan"], "Tebet": ["Tebet Barat"] }
+        "Jakarta Pusat": {
+            "Gambir": ["Cideng","Duri Pulo","Gambir","Kebon Kelapa","Petojo Selatan","Petojo Utara"],
+            "Menteng": ["Cikini","Gondangdia","Menteng","Pegangsaan"],
+            "Tanah Abang": ["Bendungan Hilir","Gelora","Karet Tengsin","Kebon Kacang","Kebon Melati","Petamburan"],
+            "Senen": ["Bungur","Kenari","Kramat","Paseban","Senen"],
+            "Johar Baru": ["Galur","Johar Baru","Kampung Rawa","Tanah Tinggi"],
+            "Cempaka Putih": ["Cempaka Putih Barat","Cempaka Putih Timur","Rawasari"],
+            "Kemayoran": ["Cempaka Baru","Gunung Sahari Selatan","Harapan Mulia","Kebon Kosong","Kemayoran","Serdang","Sumur Batu","Utan Panjang"],
+            "Sawah Besar": ["Gunung Sahari Utara","Karang Anyar","Kartini","Mangga Dua Selatan"],
+        },
+        "Jakarta Selatan": {
+            "Kebayoran Baru": ["Senayan","Selong","Rawa Barat","Gunung","Pulo","Melawai","Kramat Pela"],
+            "Kebayoran Lama": ["Cipulir","Grogol Selatan","Grogol Utara","Kebayoran Lama Selatan","Kebayoran Lama Utara","Pondok Pinang"],
+            "Cilandak": ["Cilandak Barat","Cipete Selatan","Gandaria Selatan","Lebak Bulus","Pondok Labu"],
+            "Pasar Minggu": ["Cilandak Timur","Jati Padang","Kebagusan","Pejaten Barat","Pejaten Timur","Ragunan"],
+            "Jagakarsa": ["Cipedak","Jagakarsa","Lenteng Agung","Srengseng Sawah","Tanjung Barat"],
+            "Mampang Prapatan": ["Bangka","Kuningan Barat","Mampang Prapatan","Pela Mampang","Tegal Parang"],
+            "Pancoran": ["Cikoko","Duren Tiga","Kalibata","Pancoran","Pengadegan","Rawa Jati"],
+            "Setiabudi": ["Guntur","Karet","Karet Kuningan","Karet Semanggi","Kuningan Timur","Menteng Atas","Pasar Manggis"],
+            "Tebet": ["Bukit Duri","Kebon Baru","Manggarai","Manggarai Selatan","Menteng Dalam","Tebet Barat","Tebet Timur"],
+        },
+        "Jakarta Barat": {
+            "Grogol Petamburan": ["Grogol","Tanjung Duren Utara","Tanjung Duren Selatan","Tomang","Wijaya Kusuma"],
+            "Tambora": ["Angke","Duri Selatan","Duri Utara","Jembatan Besi","Jembatan Lima","Kalianyar","Krendang","Pekojan","Roa Malaka","Tambora","Tanah Sereal"],
+            "Cengkareng": ["Cengkareng Barat","Cengkareng Timur","Duri Kosambi","Kapuk","Kedaung Kali Angke","Rawa Buaya"],
+            "Kalideres": ["Kalideres","Kamal","Pegadungan","Semanan","Tegal Alur"],
+            "Kebon Jeruk": ["Duri Kepa","Kebon Jeruk","Kelapa Dua","Kedoya Selatan","Kedoya Utara","Sukabumi Selatan","Sukabumi Utara"],
+            "Kembangan": ["Joglo","Kembangan Selatan","Kembangan Utara","Meruya Selatan","Meruya Utara","Srengseng"],
+            "Palmerah": ["Palmerah","Kota Bambu Selatan","Kota Bambu Utara","Slipi","Kemanggisan"],
+        },
+        "Jakarta Timur": {
+            "Matraman": ["Kayu Manis","Kebon Manggis","Pal Meriam","Pisangan Baru","Utan Kayu Selatan","Utan Kayu Utara"],
+            "Pulo Gadung": ["Jati","Kayu Putih","Pisangan Timur","Pulo Gadung","Rawamangun"],
+            "Kramat Jati": ["Balekambang","Batu Ampar","Cawang","Cililitan","Dukuh","Kramat Jati","Tengah"],
+            "Jatinegara": ["Bali Mester","Bidara Cina","Cipinang Cempedak","Cipinang Besar Selatan","Cipinang Besar Utara","Cipinang Muara","Rawa Bunga"],
+            "Duren Sawit": ["Duren Sawit","Malaka Jaya","Malaka Sari","Pondok Bambu","Pondok Kelapa","Pondok Kopi"],
+            "Cakung": ["Cakung Barat","Cakung Timur","Penggilingan","Pulogebang","Rawa Terate","Ujung Menteng"],
+            "Ciracas": ["Cibubur","Ciracas","Kelapa Dua Wetan","Rambutan","Susukan"],
+            "Pasar Rebo": ["Baru","Cijantung","Gedong","Kalisari","Pekayon"],
+            "Makasar": ["Cipinang Melayu","Halim Perdanakusuma","Kebon Pala","Makasar","Pinang Ranti"],
+        },
+        "Jakarta Utara": {
+            "Penjaringan": ["Kapuk Muara","Kamal Muara","Muara Angke","Pejagalan","Pluit"],
+            "Pademangan": ["Ancol","Pademangan Barat","Pademangan Timur"],
+            "Tanjung Priok": ["Kebon Bawang","Papanggo","Sunter Agung","Sunter Jaya","Tanjung Priok","Warakas"],
+            "Koja": ["Koja","Lagoa","Rawa Badak Selatan","Rawa Badak Utara","Tugu Selatan","Tugu Utara"],
+            "Kelapa Gading": ["Kelapa Gading Barat","Kelapa Gading Timur","Pegangsaan Dua"],
+            "Cilincing": ["Cilincing","Kalibaru","Marunda","Rorotan","Semper Barat","Semper Timur","Sukapura"],
+        },
+        "Kepulauan Seribu": {
+            "Kepulauan Seribu Selatan": ["Pulau Pari","Pulau Tidung","Pulau Untung Jawa"],
+            "Kepulauan Seribu Utara": ["Pulau Kelapa","Pulau Harapan","Pulau Panggang","Pulau Pramuka"],
+        },
     },
-    "Jawa Barat": { "Kota Bandung": { "Coblong": [] } } 
+    "Banten": {
+        "Kota Tangerang": {"Batuceper": [], "Benda": [], "Cibodas": [], "Ciledug": [], "Cipondoh": [], "Jatiuwung": [],
+                          "Karang Tengah": [], "Karawaci": [], "Larangan": [], "Neglasari": [], "Periuk": [], "Pinang": [], "Tangerang": []},
+        "Kota Tangerang Selatan": {"Serpong": [], "Serpong Utara": [], "Pamulang": [], "Pondok Aren": [], "Ciputat": [], "Ciputat Timur": [], "Setu": []},
+        "Kota Serang": {"Kasemen": [], "Curug": [], "Cipocok Jaya": [], "Serang": [], "Taktakan": [], "Walantaka": []},
+        "Kota Cilegon": {"Cibeber": [], "Cilegon": [], "Citangkil": [], "Ciwandan": [], "Grogol": [], "Jombang": [], "Purwakarta": [], "Pulomerak": []},
+        "Kabupaten Tangerang": {"Cikupa": [], "Curug": [], "Kelapa Dua": [], "Legok": [], "Pagedangan": [], "Panongan": [], "Pasar Kemis": [],
+                                "Sindang Jaya": [], "Tigaraksa": [], "Balaraja": [], "Cisauk": [], "Sukamulya": []},
+        "Kabupaten Serang": {"Anyar": [], "Cikande": [], "Ciruas": [], "Kragilan": [], "Kramatwatu": [], "MANCAK": [], "Waringinkurung": []},
+        "Kabupaten Pandeglang": {"Pandeglang": [], "Labuan": [], "Menes": [], "Panimbang": [], "Carita": [], "Saketi": []},
+        "Kabupaten Lebak": {"Rangkasbitung": [], "Cibadak": [], "Maja": [], "Warunggunung": [], "Bayah": [], "Cikulur": []},
+    },
+    "Jawa Barat": {
+        "Kota Bandung": {"Coblong": [], "Sukajadi": [], "Cidadap": [], "Bandung Wetan": [], "Sumur Bandung": [],
+                         "Lengkong": [], "Bojongloa Kaler": [], "Bojongloa Kidul": [], "Antapani": [], "Kiaracondong": []},
+        "Kota Bekasi": {"Bekasi Barat": [], "Bekasi Timur": [], "Bekasi Utara": [], "Bekasi Selatan": [], "Medan Satria": [], "Pondok Gede": [], "Jatisampurna": []},
+        "Kota Depok": {"Beji": [], "Cimanggis": [], "Pancoran Mas": [], "Sukmajaya": [], "Tapos": [], "Limo": [], "Cinere": []},
+        "Kota Bogor": {"Bogor Tengah": [], "Bogor Timur": [], "Bogor Barat": [], "Bogor Utara": [], "Bogor Selatan": [], "Tanah Sereal": []},
+        "Kota Cimahi": {"Cimahi Utara": [], "Cimahi Tengah": [], "Cimahi Selatan": []},
+        "Kota Cirebon": {"Kejaksan": [], "Lemahwungkuk": [], "Harjamukti": [], "Pekalipan": [], "Kesambi": []},
+        "Kota Sukabumi": {"Cikole": [], "Citamiang": [], "Gunungpuyuh": [], "Lembursitu": [], "Warudoyong": []},
+        "Kota Tasikmalaya": {"Cihideung": [], "Kawalu": [], "Mangkubumi": [], "Tamansari": [], "Cipedes": []},
+        "Kabupaten Bogor": {"Cibinong": [], "Bojong Gede": [], "Gunung Putri": [], "Citeureup": [], "Ciawi": [], "Parung": []},
+        "Kabupaten Bekasi": {"Cikarang Barat": [], "Cikarang Timur": [], "Cikarang Utara": [], "Tambun Selatan": [], "Tambun Utara": [], "Setu": []},
+        "Kabupaten Bandung": {"Soreang": [], "Baleendah": [], "Bojongsoang": [], "Margahayu": [], "Cileunyi": [], "Dayeuhkolot": []},
+        "Kabupaten Bandung Barat": {"Ngamprah": [], "Padalarang": [], "Lembang": [], "Batujajar": [], "Cikalongwetan": []},
+        "Kabupaten Karawang": {"Karawang Barat": [], "Karawang Timur": [], "Telukjambe Timur": [], "Telukjambe Barat": [], "Cikampek": []},
+        "Kabupaten Purwakarta": {"Purwakarta": [], "Jatiluhur": [], "Babakancikao": []},
+        "Kabupaten Subang": {"Subang": [], "Kalijati": [], "Ciasem": []},
+        "Kabupaten Indramayu": {"Indramayu": [], "Jatibarang": [], "Haurgeulis": []},
+        "Kabupaten Cirebon": {"Sumber": [], "Weru": [], "Arjawinangun": []},
+        "Kabupaten Garut": {"Garut Kota": [], "Tarogong Kidul": [], "Tarogong Kaler": [], "Cibatu": []},
+        "Kabupaten Sukabumi": {"Cisaat": [], "Cibadak": [], "Pelabuhanratu": [], "Cicurug": []},
+        "Kabupaten Sumedang": {"Sumedang Utara": [], "Sumedang Selatan": [], "Jatinangor": [], "Tanjungsari": []},
+        "Kabupaten Tasikmalaya": {"Singaparna": [], "Manonjaya": [], "Rajapolah": []},
+        "Kota Banjar": {"Banjar": [], "Langensari": [], "Pataruman": []},
+    },
 }
 # --- Restore full ADDR_TREE from original code if running in production ---
 # Note: For the sake of this UI demo, I'm keeping the logic but assuming the dict is full.
