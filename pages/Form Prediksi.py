@@ -16,7 +16,7 @@ except Exception:
 # Optional plotting
 try:
     import matplotlib.pyplot as plt
-    import seaborn as sns # Added seaborn for better styling if available
+    import seaborn as sns 
     MPL_OK = True
 except Exception:
     MPL_OK = False
@@ -33,13 +33,8 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* Global Styling */
-    .main {
-        background-color: #f8f9fa;
-    }
-    h1, h2, h3 {
-        font-family: 'Segoe UI', sans-serif;
-        color: #2c3e50;
-    }
+    .main { background-color: #f8f9fa; }
+    h1, h2, h3 { font-family: 'Segoe UI', sans-serif; color: #2c3e50; }
     
     /* Custom Card Container */
     .css-card {
@@ -51,48 +46,39 @@ st.markdown("""
         border: 1px solid #e0e0e0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .css-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
+    .css-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); }
     
     /* Metrics Styling */
     div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        border: 1px solid #eee;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        text-align: center;
-    }
-    div[data-testid="stMetric"] label {
-        color: #7f8c8d;
+        background-color: #ffffff; border: 1px solid #eee; padding: 15px;
+        border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;
     }
     
     /* Button Styling */
-    .stButton>button {
-        width: 100%;
-        border-radius: 8px;
-        font-weight: 600;
-        height: 3em;
-        transition: all 0.3s ease;
-    }
+    .stButton>button { width: 100%; border-radius: 8px; font-weight: 600; height: 3em; transition: all 0.3s ease; }
     
-    /* Tabs Styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
+    /* Info Box Styling (Tips & Catatan) */
+    .info-box-blue {
+        background-color: #e3f2fd;
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 5px solid #2196f3;
+        color: #0d47a1;
+        font-size: 14px;
+        margin-bottom: 15px;
+        line-height: 1.5;
     }
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #fff;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    .info-box-yellow {
+        background-color: #fff9c4;
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 5px solid #fbc02d;
+        color: #f57f17;
+        font-size: 13px;
+        margin-bottom: 15px;
+        line-height: 1.5;
     }
-    .stTabs [aria-selected="true"] {
-        background-color: #e8f0fe;
-        color: #1a73e8;
-    }
+    .sidebar-text { font-size: 14px; color: #555; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -185,7 +171,6 @@ def pick_cbd_jakarta(lat, lon):
         return best[0], round(best[1], 3)
     return "Non-CBD/Other", round(best[1], 3)
 
-# ---------- Address dropdown tree ----------
 MANUAL_LABEL = "Manual… (ketik sendiri)"
 ADDR_TREE = {
     "DKI Jakarta": {
@@ -281,59 +266,70 @@ ADDR_TREE = {
         "Kota Banjar": {"Banjar": [], "Langensari": [], "Pataruman": []},
     },
 }
-# --- Restore full ADDR_TREE from original code if running in production ---
-# Note: For the sake of this UI demo, I'm keeping the logic but assuming the dict is full.
-# Please ensure the full ADDR_TREE dictionary from your original code is pasted here.
+
+# ---------- [CRITICAL] DATA CLEANING FUNCTION ----------
+def clean_and_standardize_data(df):
+    elevasi_map = {
+        "sama dengan jalan": "Sama Dengan Jalan", "Sama dengan jalan": "Sama Dengan Jalan", "Sama Dengan Jalan": "Sama Dengan Jalan",
+        "lebih tinggi dari jalan": "Lebih Tinggi", "lebih tinggi": "Lebih Tinggi", "Lebih tinggi": "Lebih Tinggi", "Lebih Tinggi": "Lebih Tinggi",
+        "lebih rendah dari jalan": "Lebih Rendah", "lebih rendah": "Lebih Rendah", "Lebih rendah": "Lebih Rendah", "Lebih Rendah": "Lebih Rendah",
+    }
+    kontur_map = {
+        "datar": "Datar", "Datar": "Datar", "1 datar": "Datar", "2 datar": "Datar", "datar dan butuh uruk": "Datar",
+        "bergelombang": "Bergelombang", "Bergelombang": "Bergelombang",
+        "miring": "Miring", "Miring": "Miring", "Miring-Mendaki": "Miring",
+        "terasering": "Terasering", "Terasering": "Terasering"
+    }
+    
+    if "elavasi" in df.columns:
+        df["elavasi"] = df["elavasi"].astype(str).str.strip().map(elevasi_map).fillna("Datar")
+    if "kontur" in df.columns:
+        df["kontur"] = df["kontur"].astype(str).str.strip().map(kontur_map).fillna("Rata")
+        
+    cols_title = ["kondisi_jalan", "kontruksi_jalan", "pemanfaatan_sekitar", "dokumen_kepemilikan"]
+    for col in cols_title:
+        if col in df.columns:
+            df[col] = df[col].astype(str).str.strip().str.title()
+    return df
 
 # ---------- load default model/config ----------
 def _coerce_to_predictor(obj):
     try:
-        if hasattr(obj, "predict") and callable(getattr(obj, "predict")):
-            return obj
+        if hasattr(obj, "predict") and callable(getattr(obj, "predict")): return obj
         if isinstance(obj, dict):
-            for k in ("model","pipeline","pipe","estimator","reg","regressor"):
-                if k in obj and hasattr(obj[k], "predict"):
-                    return obj[k]
+            for k in ("model","pipeline","pipe","estimator"):
+                if k in obj and hasattr(obj[k], "predict"): return obj[k]
         if isinstance(obj, (list, tuple)):
             for v in obj:
                 p = _coerce_to_predictor(v)
-                if p is not None:
-                    return p
-        for k in ("model","pipeline","pipe","estimator"):
-            if hasattr(obj, k) and hasattr(getattr(obj, k), "predict"):
-                return getattr(obj, k)
-    except Exception:
-        pass
+                if p is not None: return p
+    except: pass
     return None
 
 @st.cache_resource(show_spinner=False)
 def load_default_model_and_config():
     models_dir = ROOT / "models"
-    cfg = None
-    model = None
+    cfg = None; model = None
     if models_dir.exists():
         cfg_path = models_dir / "config_latest.json"
         if cfg_path.exists():
             try: cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-            except Exception: cfg = None
+            except: cfg = None
         for fname in ("model_bundle_latest.pkl", "model_latest.pkl"):
             f = models_dir / fname
             if f.exists():
                 try:
-                    obj = joblib.load(f) if JOBLIB_OK else pickle.load(open(f, "rb"))  # type: ignore
+                    obj = joblib.load(f) if JOBLIB_OK else pickle.load(open(f, "rb"))
                     p = _coerce_to_predictor(obj)
-                    if p is not None:
-                        model = p
-                        break
-                except Exception:
-                    continue
+                    if p is not None: model = p; break
+                except: continue
     return model, cfg
 
 # ==============================================================================
-# SIDEBAR: CONFIG & MODEL LOADING
+# SIDEBAR
 # ==============================================================================
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/2642/2642502.png", width=50) # Placeholder icon
+    st.image("https://cdn-icons-png.flaticon.com/512/2642/2642502.png", width=50) 
     st.title("Konfigurasi Sistem")
     st.markdown("---")
     
@@ -381,18 +377,30 @@ with st.sidebar:
             except:
                 st.error("Config error")
 
+    # --- [NEW] BAGIAN CARA PENGGUNAAN DI SIDEBAR ---
     st.markdown("---")
-    st.caption("v2.0 • End-User Inference Engine")
+    st.subheader("💡 Cara Penggunaan")
+    st.markdown("""
+    <div class="sidebar-text">
+    1. <b>Isi Parameter:</b> Lengkapi data lokasi, fisik tanah, dan legalitas di formulir utama.
+    2. <b>Cek Peta/Lokasi:</b> Pastikan Lat/Lon sesuai untuk akurasi jarak ke CBD.
+    3. <b>Klik Prediksi:</b> Tekan tombol biru di bawah formulir.
+    4. <b>Analisis:</b> Lihat hasil valuasi dan faktor yang mempengaruhinya.
+    </div>
+    """, unsafe_allow_html=True)
+    # -----------------------------------------------
+
+    st.markdown("---")
+    st.caption("v2.2 • Auto-Clean & Tips")
 
 # ==============================================================================
 # MAIN PAGE
 # ==============================================================================
 
-# HERO SECTION
 st.markdown("""
 <div style="padding: 20px; background: linear-gradient(90deg, #1a2980 0%, #26d0ce 100%); border-radius: 15px; color: white; margin-bottom: 30px;">
     <h1 style="color: white; margin:0;">🧭 Prediksi Nilai Tanah</h1>
-    <p style="margin:0; opacity: 0.9;">Estimasi harga pasar dan analisis kontribusi fitur secara real-time.</p>
+    <p style="margin:0; opacity: 0.9;">Estimasi harga pasar dengan <b>Standardisasi Data Otomatis</b>.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -400,39 +408,36 @@ if model_obj is None:
     st.warning("⚠️ Model belum dimuat. Silakan cek sidebar.")
     st.stop()
 
-# --- INPUT SECTION (CARD BASED) ---
-col_left, col_right = st.columns([1.5, 1])
+# --- LAYOUT BARU: KIRI INPUT (70%), KANAN TIPS (30%) ---
+col_left, col_right = st.columns([2.5, 1])
 
+# --- KOLOM KIRI: SEMUA INPUT FORM ---
 with col_left:
-    # GROUP 1: LOKASI & GEOGRAFIS
+    st.subheader("📝 Input Parameter Tanah")
+    
+    # GROUP 1: LOKASI
     with st.container():
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.markdown("---")
         st.markdown("### 📍 Lokasi & Geografis")
         
         c1, c2 = st.columns(2)
-        with c1:
-            lat = st.number_input("Latitude", value=-6.200000, format="%.6f", help="Koordinat untuk dokumentasi & jarak CBD")
-        with c2:
-            lon = st.number_input("Longitude", value=106.816666, format="%.6f")
+        with c1: lat = st.number_input("Latitude", value=-6.200000, format="%.6f")
+        with c2: lon = st.number_input("Longitude", value=106.816666, format="%.6f")
 
-        # Auto logic
         cbd_auto, dist_auto = pick_cbd_jakarta(lat, lon)
         st.info(f"🎯 **CBD Terdekat (Auto):** {cbd_auto} ({dist_auto} km)", icon="🏢")
 
         st.markdown("---")
-        # Address Logic
         provinsi_list = list(ADDR_TREE.keys()) + [MANUAL_LABEL]
         prov_choice = st.selectbox("Provinsi", provinsi_list, index=0)
         provinsi_val = st.text_input("✍️ Provinsi Manual", "") if prov_choice == MANUAL_LABEL else prov_choice
 
-        # Dynamic options based on selection (Simplified logic wrapper)
         kota_opts = [MANUAL_LABEL] if prov_choice == MANUAL_LABEL else list(ADDR_TREE.get(provinsi_val, {}).keys()) + [MANUAL_LABEL]
         kota_choice = st.selectbox("Kota/Kabupaten", kota_opts)
         kota_kabupaten = st.text_input("✍️ Kota Manual", "") if kota_choice == MANUAL_LABEL else kota_choice
         
         kec_opts = [MANUAL_LABEL]
         if kota_choice != MANUAL_LABEL and prov_choice != MANUAL_LABEL:
-             # Safe get
              kec_opts = list(ADDR_TREE.get(provinsi_val, {}).get(kota_kabupaten, {}).keys()) + [MANUAL_LABEL]
         
         kc1, kc2 = st.columns(2)
@@ -447,62 +452,86 @@ with col_left:
             kel_choice = st.selectbox("Kelurahan", kel_opts)
             kelurahan = st.text_input("✍️ Kel. Manual", "") if kel_choice == MANUAL_LABEL else kel_choice
             
-        st.markdown('</div>', unsafe_allow_html=True) # End Card
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # GROUP 2: SPESIFIKASI LAHAN
     with st.container():
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.markdown("---")
         st.markdown("### 📐 Spesifikasi & Kondisi Lahan")
         
         l1, l2 = st.columns(2)
         with l1:
             luas = st.number_input("Luas Tanah (m²)", value=100.0, min_value=1.0, step=10.0)
-            jarak_ke_jalan = st.number_input("Jarak Ke Jalan (m)", value=6.0, step=0.5, help="Lebar jalan di depan properti")
+            jarak_ke_jalan = st.number_input("Jarak Ke Jalan (m)", value=6.0, step=0.5)
         with l2:
-            kontur = st.selectbox("Kontur Tanah", ["Rata","Bergelombang","Berbukit"])
-            elavasi = st.selectbox("Elevasi", ["Datar","Miring Ringan","Miring","Curam"])
+            kontur = st.selectbox("Kontur Tanah", ["Datar", "Bergelombang", "Miring", "Terasering"])
+            elavasi = st.selectbox("Elevasi", ["Sama Dengan Jalan", "Lebih Rendah", "Lebih Tinggi"])
             
         st.markdown("---")
         k1, k2 = st.columns(2)
-        with k1:
-             kontruksi_jalan = st.selectbox("Konstruksi Jalan", ["Aspal","Beton","Paving","Tanah"])
-        with k2:
-             kondisi_jalan = st.selectbox("Kondisi Jalan", ["Baik","Sedang","Buruk","Rusak"])
-             
+        with k1: kontruksi_jalan = st.selectbox("Konstruksi Jalan", ["Aspal","Beton","Paving","Tanah"])
+        with k2: kondisi_jalan = st.selectbox("Kondisi Jalan", ["Baik","Sedang","Buruk","Rusak"])
         st.markdown('</div>', unsafe_allow_html=True)
 
-with col_right:
-    # GROUP 3: LEGALITAS & LINGKUNGAN
+    # GROUP 3: LEGALITAS
     with st.container():
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.markdown("---")
         st.markdown("### ⚖️ Legalitas & Lingkungan")
-        
         dokumen_kepemilikan = st.selectbox("Dokumen", ["SHM","HGB","HPL","Girik/AJB","Lainnya"])
-        pemanfaatan_sekitar = st.selectbox("Zona Sekitar", ["Perumahan","Komersial","Campuran","Industri","Lahan Kosong","Pertanian"])
+        pemanfaatan_sekitar = st.selectbox("Pemanfaatan Sekitar", ["Perumahan","Komersial","Campuran","Industri","Lahan Kosong","Pertanian"])
         jenis_transaksi = st.selectbox("Jenis Transaksi", ["Jual","Sewa","Lelang"])
         sumber_data = st.selectbox("Sumber Data", ["Iklan","Survey Lapangan","Agen/PPAT","Lainnya"])
         
         st.markdown("---")
         st.markdown("**Override CBD (Opsional)**")
         cbd_options = ["Non-CBD/Other"] + [r["cbd"] for r in CBD_POINTS_JAKARTA]
-        
-        # Smart default
-        def_idx = 0
-        if cbd_auto in cbd_options:
-            def_idx = cbd_options.index(cbd_auto)
-            
+        def_idx = cbd_options.index(cbd_auto) if cbd_auto in cbd_options else 0
         nama_cbd = st.selectbox("Nama CBD Reference", options=cbd_options, index=def_idx)
         jarak_cbd = st.number_input("Jarak ke CBD (km)", value=float(dist_auto), step=0.1, format="%.3f")
-        
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # GROUP 4: SETTING ANALISIS
+    # GROUP 4: SETTING
     with st.container():
         st.markdown('<div class="css-card" style="background-color:#f0f2f6;">', unsafe_allow_html=True)
         st.markdown("### ⚙️ Setting Analisis")
-        ignore_latlon = st.checkbox("Abaikan Lat/Lon di analisis fitur", value=True, help="Disarankan ON agar analisis fokus pada karakteristik fisik")
+        ignore_latlon = st.checkbox("Abaikan Lat/Lon di analisis fitur", value=True)
         SENS_PCT = st.slider("Sensitivitas Numerik (±%)", 1, 20, 5, 1) / 100.0
         st.markdown('</div>', unsafe_allow_html=True)
+
+# --- KOLOM KANAN: TIPS & CATATAN (STICKY) ---
+with col_right:
+    st.markdown("<br>", unsafe_allow_html=True) # Spacer
+    
+    st.subheader("🔍 Tips Prediksi")
+    st.markdown("""
+    <div class="info-box-blue">
+        <b>Tips untuk hasil akurat:</b>
+        <ul style="margin-top: 5px; padding-left: 20px;">
+            <li><b>Luas Tanah:</b> Pastikan input luas sesuai sertifikat.</li>
+            <li><b>Elevasi:</b> Tanah yang "Lebih Rendah" dari jalan biasanya memiliki valuasi lebih rendah karena risiko banjir.</li>
+            <li><b>Legalitas:</b> Status SHM menaikkan nilai tanah dibanding Girik/AJB.</li>
+            <li><b>Lokasi:</b> Jarak ke CBD (Pusat Kota) sangat mempengaruhi harga secara eksponensial.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.subheader("⚠️ Catatan Penting")
+    st.markdown("""
+    <div class="info-box-yellow">
+        <b>Disclaimer:</b>
+        <p>Prediksi ini menggunakan algoritma Machine Learning berdasarkan data historis pasar.</p>
+        <p>Harga aktual dapat berbeda tergantung:</p>
+        <ul style="padding-left: 20px;">
+            <li>Kondisi ekonomi terkini</li>
+            <li>Bentuk tanah (ngantong/kotak)</li>
+            <li>Negosiasi penjual-pembeli</li>
+            <li>Faktor estetika & view</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.write("")
+    st.image("https://img.freepik.com/free-photo/delimitation-land-plots_23-2150170946.jpg", caption="Prediksi Tanah AI", use_container_width=True)
 
 # PREPARE DATA
 DEFAULT_REQUIRED_COLS = [
@@ -529,10 +558,9 @@ X_pred = pd.DataFrame([[row.get(c, np.nan) for c in required_cols]], columns=req
 st.markdown("###")
 predict_btn = st.button("🚀 HITUNG PREDIKSI & ANALISIS", type="primary", use_container_width=True)
 
-# Placeholder logic for functions (Keep original logic, just hidden for brevity in UI display)
+# Helper Functions
 def _is_number(x): return isinstance(x, (int, float, np.integer, np.floating)) and np.isfinite(x)
-# ... (Fungsi explain_numeric_local dan explain_categorical_contrast sama persis dengan kode asli)
-# ... Copy paste fungsi explain_numeric_local dan explain_categorical_contrast di sini
+
 def explain_numeric_local(model, X_row, pct, skip_cols=None):
     skip = set(skip_cols or [])
     base = float(model.predict(X_row)[0])
@@ -583,9 +611,10 @@ def explain_categorical_contrast(model, X_row, choices_map, skip_cols=None):
                 })
     return pd.DataFrame(recs)
 
+# Update Choices UI dengan Kategori Standar
 CAT_CHOICES_UI = {
-    "elavasi": ["Datar","Miring Ringan","Miring","Curam"],
-    "kontur": ["Rata","Bergelombang","Berbukit"],
+    "elavasi": ["Sama Dengan Jalan", "Lebih Rendah", "Lebih Tinggi"],
+    "kontur": ["Datar", "Bergelombang", "Miring", "Terasering"],
     "kontruksi_jalan": ["Aspal","Beton","Paving","Tanah"],
     "kondisi_jalan": ["Baik","Sedang","Buruk","Rusak"],
     "pemanfaatan_sekitar": ["Perumahan","Komersial","Campuran","Industri","Lahan Kosong","Pertanian"],
@@ -602,6 +631,10 @@ if predict_btn:
     my_bar = st.progress(0, text=progress_text)
 
     try:
+        # --- [CRITICAL UPDATE] CLEAN DATA ---
+        X_pred = clean_and_standardize_data(X_pred)
+        # -------------------------------------
+
         # Simulation animation
         for percent_complete in range(0, 40, 10):
             time.sleep(0.05)
@@ -649,7 +682,6 @@ if predict_btn:
             total_abs = contrib["abs_effect"].sum() if len(contrib) else 0.0
             contrib["abs_share"] = (contrib["abs_effect"] / total_abs) if total_abs > 0 else 0.0
             
-            # Helper for readable text
             def _direction(row):
                 if row["type"] == "numeric":
                     s = row.get("sensitivity", 0.0)
@@ -665,8 +697,6 @@ if predict_btn:
             with tab1:
                 st.caption("Faktor-faktor dengan dampak absolut terbesar terhadap harga.")
                 top_features = contrib.head(10)[["feature", "abs_effect", "type", "Karakter", "abs_share"]]
-                
-                # Custom HTML bar chart styled
                 for _, r in top_features.iterrows():
                     pct = r['abs_share'] * 100
                     color = "#2ecc71" if "Positif" in r['Karakter'] or "atas" in r['Karakter'] else "#e74c3c"
@@ -683,15 +713,11 @@ if predict_btn:
                     </div>
                     """, unsafe_allow_html=True)
 
-            with tab2:
-                st.dataframe(df_num.style.format({"effect_up": "{:,.0f}", "effect_down": "{:,.0f}", "sensitivity": "{:.2f}"}), use_container_width=True)
-                
-            with tab3:
-                st.dataframe(df_cat.style.format({"delta_vs_avg_alt": "{:,.0f}", "effect_if_best_alt": "{:,.0f}"}), use_container_width=True)
+            with tab2: st.dataframe(df_num.style.format({"effect_up": "{:,.0f}", "effect_down": "{:,.0f}", "sensitivity": "{:.2f}"}), use_container_width=True)
+            with tab3: st.dataframe(df_cat.style.format({"delta_vs_avg_alt": "{:,.0f}", "effect_if_best_alt": "{:,.0f}"}), use_container_width=True)
 
     except Exception as e:
         st.error(f"Terjadi kesalahan saat prediksi: {str(e)}")
-
 
 # ==============================================================================
 # BATCH PREDICTION SECTION
@@ -709,12 +735,16 @@ with st.expander("📂 Prediksi Batch (Upload File)", expanded=False):
         st.dataframe(df_in.head(), use_container_width=True)
         
         if st.button("Proses Batch"):
-            # (Gunakan logika fillna default seperti kode asli)
             defaults_for_missing = {"sumber_data": "Iklan", "elavasi": "Datar", "kontur": "Rata", "kontruksi_jalan": "Aspal", "kondisi_jalan": "Baik", "jenis_transaksi": "Jual", "dokumen_kepemilikan": "SHM", "pemanfaatan_sekitar": "Perumahan", "luas": 100.0, "jarak_ke_jalan": 50.0, "provinsi": "DKI Jakarta", "nama_cbd": "Non-CBD/Other"}
             for col in defaults_for_missing:
                 if col not in df_in.columns: df_in[col] = defaults_for_missing[col]
             
             try:
+                # --- [CRITICAL UPDATE] CLEAN DATA ---
+                # Bersihkan data Excel yang kotor sebelum masuk model
+                df_in = clean_and_standardize_data(df_in)
+                # -------------------------------------
+
                 Xb = df_in[required_cols].copy()
                 y_batch = model_obj.predict(Xb)
                 df_in["Prediksi_Harga"] = y_batch
@@ -722,7 +752,6 @@ with st.expander("📂 Prediksi Batch (Upload File)", expanded=False):
                 st.success("Selesai!")
                 st.dataframe(df_in[["Prediksi_Harga"] + required_cols[:3]].head(), use_container_width=True)
                 
-                # Download
                 buf = io.BytesIO()
                 with pd.ExcelWriter(buf, engine="openpyxl") as w:
                     df_in.to_excel(w, index=False)
