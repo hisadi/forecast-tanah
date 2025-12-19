@@ -467,7 +467,6 @@ with col_left:
             kontur = st.selectbox("Kontur Tanah", ["Datar", "Bergelombang", "Miring", "Terasering"])
             elavasi = st.selectbox("Elevasi", ["Sama Dengan Jalan", "Lebih Rendah", "Lebih Tinggi"])
             
-        st.markdown("---")
         k1, k2 = st.columns(2)
         with k1: kontruksi_jalan = st.selectbox("Konstruksi Jalan", ["Aspal","Beton","Paving","Tanah"])
         with k2: kondisi_jalan = st.selectbox("Kondisi Jalan", ["Baik","Sedang","Buruk","Rusak"])
