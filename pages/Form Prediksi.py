@@ -391,7 +391,7 @@ with st.sidebar:
     # -----------------------------------------------
 
     st.markdown("---")
-    st.caption("v2.2 • Auto-Clean & Tips")
+    st.caption("Powered By Binus Skripsi © 2025/2026")
 
 # ==============================================================================
 # MAIN PAGE
