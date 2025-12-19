@@ -436,7 +436,6 @@ with col_left:
     
     # GROUP 4: SETTING
     with st.container():
-        st.markdown('<div class="css-card" style="background-color:#f0f2f6;">', unsafe_allow_html=True)
         st.markdown("### ⚙️ Setting Analisis")
         ignore_latlon = st.checkbox("Abaikan Lat/Lon di analisis fitur", value=True)
         SENS_PCT = st.slider("Sensitivitas Numerik (±%)", 1, 20, 5, 1) / 100.0
