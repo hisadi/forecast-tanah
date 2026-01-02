@@ -16,8 +16,8 @@
   ],
   "freq_feats": [],
   "addr_feats": [
-    "nama_cbd",
-    "kota_kabupaten"
+    "kota_kabupaten",
+    "nama_cbd"
   ],
   "top_n_addr": 40,
   "ohe_categories": {
