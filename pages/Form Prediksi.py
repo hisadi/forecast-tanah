@@ -254,20 +254,42 @@ def _coerce_to_predictor(obj):
 @st.cache_resource(show_spinner=False)
 def load_default_model_and_config():
     models_dir = ROOT / "models"
-    cfg = None; model = None
-    if models_dir.exists():
-        cfg_path = models_dir / "config_latest.json"
-        if cfg_path.exists():
-            try: cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-            except: cfg = None
-        for fname in ("model_bundle_latest.pkl", "model_latest.pkl"):
-            f = models_dir / fname
-            if f.exists():
-                try:
-                    obj = joblib.load(f) if JOBLIB_OK else pickle.load(open(f, "rb"))
-                    p = _coerce_to_predictor(obj)
-                    if p is not None: model = p; break
-                except: continue
+    model = None
+    cfg = None
+
+    # PRIORITAS 1: Coba load dari Bundle (.pkl) - Ini paling akurat
+    # Karena saat training, fitur yang dipakai disimpan fix di sini
+    bundle_path = models_dir / "model_bundle_latest.pkl"
+    if bundle_path.exists():
+        try:
+            with open(bundle_path, "rb") as f:
+                obj = joblib.load(f) if JOBLIB_OK else pickle.load(f)
+            
+            # Ambil pipeline dan config dari dalam bundle
+            if isinstance(obj, dict):
+                model = obj.get("pipeline")
+                cfg = obj.get("config")
+                return model, cfg
+        except Exception:
+            pass # Lanjut ke cara lain jika gagal
+
+    # PRIORITAS 2: Load terpisah (Legacy / Cadangan)
+    # Ini seringkali tidak sinkron jika JSON tidak terupdate
+    json_path = models_dir / "config_latest.json"
+    if json_path.exists():
+        try:
+            cfg = json.loads(json_path.read_text(encoding="utf-8"))
+        except:
+            cfg = None
+
+    model_path = models_dir / "model_latest.pkl"
+    if model_path.exists():
+        try:
+            obj = joblib.load(model_path) if JOBLIB_OK else pickle.load(open(model_path, "rb"))
+            model = _coerce_to_predictor(obj)
+        except:
+            model = None
+
     return model, cfg
 
 # ==============================================================================
@@ -303,11 +325,23 @@ with st.sidebar:
         if up is not None:
             try:
                 raw = joblib.load(up) if JOBLIB_OK else pickle.load(up)
-                pred = _coerce_to_predictor(raw)
-                if pred:
-                    model_obj = pred
+                
+                # --- PERUBAHAN DI SINI ---
+                # Cek apakah file adalah Bundle (Dictionary isi pipeline + config)
+                if isinstance(raw, dict) and "pipeline" in raw and "config" in raw:
+                    model_obj = raw["pipeline"]
+                    feature_cfg = raw["config"] # Ambil config fitur dari file
+                else:
+                    model_obj = _coerce_to_predictor(raw)
+                
+                if model_obj:
                     st.session_state["trained_model"] = model_obj
+                    # Simpan config ke session state agar terbaca di bawah
+                    if feature_cfg: 
+                        st.session_state["feature_cfg"] = feature_cfg
+                    
                     st.success("✅ Model Terupload")
+                # -------------------------
                 else:
                     st.error("File tidak valid.")
             except Exception as e:
@@ -329,7 +363,7 @@ with st.sidebar:
     <div class="sidebar-text">
     1. <b>Isi Parameter:</b> Lengkapi data lokasi, fisik tanah, dan legalitas di formulir utama.
     2. <b>Cek Peta/Lokasi:</b> Pastikan Lat/Lon sesuai untuk akurasi jarak ke CBD.
-    3. <b>Klik Prediksi:</b> Tekan tombol biru di bawah formulir.
+    3. <b>Klik Prediksi:</b> Tekan tombol merah di bawah formulir.
     4. <b>Analisis:</b> Lihat hasil valuasi dan faktor yang mempengaruhinya.
     </div>
     """, unsafe_allow_html=True)
@@ -462,13 +496,10 @@ with col_right:
     st.markdown("""
     <div class="info-box-yellow">
         <b>Disclaimer:</b>
-        <p>Prediksi ini menggunakan algoritma Machine Learning berdasarkan data historis pasar.</p>
-        <p>Harga aktual dapat berbeda tergantung:</p>
         <ul style="padding-left: 20px;">
-            <li>Kondisi ekonomi terkini</li>
-            <li>Bentuk tanah (ngantong/kotak)</li>
-            <li>Negosiasi penjual-pembeli</li>
-            <li>Faktor estetika & view</li>
+            <li>Hasil prediksi pada aplikasi ini merupakan estimasi awal berbasis machine learning, <b>bukan nilai penilaian final</b></li>
+            <li>Prediksi bekerja lebih baik pada data dengan karakteristik umum dan dapat kurang akurat pada objek bernilai <b>ekstrem</b></li>
+            <li><b>Hasil prediksi hanya digunakan sebagai alat bantu analisis dan tetap memerlukan verifikasi serta pertimbangan profesional Penilai Pemerintah</b></li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
@@ -476,14 +507,48 @@ with col_right:
     st.write("")
     st.image("https://img.freepik.com/free-photo/delimitation-land-plots_23-2150170946.jpg", caption="Prediksi Tanah AI", use_container_width=True)
 
-# PREPARE DATA
-DEFAULT_REQUIRED_COLS = [
-    "nama_cbd","sumber_data","elavasi","jarak_ke_jalan","kontur",
-    "kontruksi_jalan","kota_kabupaten","kondisi_jalan","jenis_transaksi",
-    "luas","dokumen_kepemilikan","jarak_cbd","pemanfaatan_sekitar",
-    "latitude","longitude","provinsi"
-]
-required_cols = feature_cfg.get("required_cols", DEFAULT_REQUIRED_COLS) if isinstance(feature_cfg, dict) else DEFAULT_REQUIRED_COLS
+# |---PREPARE DATA---|
+
+# 1. Cek apakah config fitur tersedia (dari load otomatis / upload)
+if feature_cfg and isinstance(feature_cfg, dict):
+    # Jika ada key 'features_in' (biasanya dari bundle .pkl), pakai itu karena paling akurat
+    if "features_in" in feature_cfg:
+        required_cols = feature_cfg["features_in"]
+    
+    # Jika tidak, rakit ulang dari potongan fitur
+    else:
+        required_cols = (
+            feature_cfg.get("numeric_feats", []) + 
+            feature_cfg.get("onehot_feats", []) + 
+            feature_cfg.get("freq_feats", []) + 
+            feature_cfg.get("addr_feats", [])
+        )
+        # Hapus kolom target jika ikut masuk
+        target = feature_cfg.get("target_col", "")
+        if target in required_cols:
+            required_cols.remove(target)
+            
+    # Hapus duplikat
+    required_cols = list(dict.fromkeys(required_cols))
+    
+    # Fallback jika list kosong
+    if not required_cols:
+        # Default darurat TANPA provinsi
+        required_cols = ["nama_cbd","sumber_data","elavasi","jarak_ke_jalan","kontur",
+            "kontruksi_jalan","kota_kabupaten","kondisi_jalan","jenis_transaksi",
+            "luas","dokumen_kepemilikan","jarak_cbd","pemanfaatan_sekitar",
+            "latitude","longitude"]
+else:
+    # Jika config gagal dimuat sama sekali, pakai default TANPA provinsi
+    required_cols = [
+        "nama_cbd","sumber_data","elavasi","jarak_ke_jalan","kontur",
+        "kontruksi_jalan","kota_kabupaten","kondisi_jalan","jenis_transaksi",
+        "luas","dokumen_kepemilikan","jarak_cbd","pemanfaatan_sekitar",
+        "latitude","longitude"
+    ]
+
+# Debugging (Opsional: Munculkan di layar untuk memastikan)
+# st.write("Fitur yang digunakan model:", required_cols)
 
 row = {
     "nama_cbd": nama_cbd, "sumber_data": sumber_data, "elavasi": elavasi,

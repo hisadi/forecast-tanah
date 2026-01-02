@@ -245,7 +245,12 @@ def recommend_outlier_method(skew: float, best_dist: Optional[str]) -> str:
 # =========================
 # APP — TRAINING
 # =========================
-st.set_page_config(page_title="Training Model • Tanah", layout="wide")
+st.set_page_config(
+    page_title="Training Model • Tanah", 
+    page_icon="🧭", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 st.title("Training & Evaluasi Model (Regresi)")
 
 uploaded = st.file_uploader("Upload Excel/CSV", type=["xlsx", "xls", "csv"])
