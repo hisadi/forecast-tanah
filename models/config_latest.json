@@ -7,6 +7,7 @@
   ],
   "onehot_feats": [
     "dokumen_kepemilikan",
+    "jenis_transaksi",
     "kontur",
     "elavasi",
     "pemanfaatan_sekitar",
@@ -33,15 +34,21 @@
       "SHGB",
       "SHM",
       "SHP",
+      "SHPL",
       "Surat Ijo"
+    ],
+    "jenis_transaksi": [
+      "Penawaran Akhir/Harga Pas",
+      "Penawaran Awal/Nego",
+      "Penawaran Menengah/Nego Tipis",
+      "Transaksi Jual Beli"
     ],
     "kontur": [
       "Bergelombang",
       "Datar",
       "Miring-Mendaki",
       "Miring-Menurun",
-      "Terasering",
-      "menurun"
+      "Terasering"
     ],
     "elavasi": [
       "Lebih Rendah",
@@ -55,7 +62,6 @@
       "Komersial",
       "Lainnya",
       "Perkantoran",
-      "Perkebunan",
       "Pertanian",
       "Residensial",
       "campuran",
@@ -72,15 +78,13 @@
       "Rabat",
       "Tanah",
       "aspal",
-      "beton",
-      "paving gang"
+      "beton"
     ],
     "kondisi_jalan": [
       "Baik",
       "Jelek/Rusak",
       "Sedang",
-      "baik",
-      "cukup"
+      "baik"
     ]
   },
   "freq_top_values": {},
