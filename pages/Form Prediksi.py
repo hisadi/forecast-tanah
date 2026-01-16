@@ -222,14 +222,15 @@ def clean_and_standardize_data(df):
     kontur_map = {
         "datar": "Datar", "Datar": "Datar", "1 datar": "Datar", "2 datar": "Datar", "datar dan butuh uruk": "Datar",
         "bergelombang": "Bergelombang", "Bergelombang": "Bergelombang",
-        "miring": "Miring", "Miring": "Miring", "Miring-Mendaki": "Miring",
+        "miring-mendaki": "Miring-Mendaki", "Miring-mendaki": "Miring-Mendaki", "Miring-Mendaki": "Miring-Mendaki",
+        "miring-menurun": "Miring-Menurun", "Miring-menurun": "Miring-Menurun", "Miring-Menurun": "Miring-Menurun",
         "terasering": "Terasering", "Terasering": "Terasering"
     }
     
     if "elavasi" in df.columns:
-        df["elavasi"] = df["elavasi"].astype(str).str.strip().map(elevasi_map).fillna("Datar")
+        df["elavasi"] = df["elavasi"].astype(str).str.strip().map(elevasi_map).fillna("Sama Dengan Jalan")
     if "kontur" in df.columns:
-        df["kontur"] = df["kontur"].astype(str).str.strip().map(kontur_map).fillna("Rata")
+        df["kontur"] = df["kontur"].astype(str).str.strip().map(kontur_map).fillna("Datar")
         
     cols_title = ["kondisi_jalan", "kontruksi_jalan", "pemanfaatan_sekitar", "dokumen_kepemilikan"]
     for col in cols_title:
@@ -443,21 +444,21 @@ with col_left:
             luas = st.number_input("Luas Tanah (m²)", value=100.0, min_value=1.0, step=10.0)
             jarak_ke_jalan = st.number_input("Jarak Ke Jalan (m)", value=6.0, step=0.5)
         with l2:
-            kontur = st.selectbox("Kontur Tanah", ["Datar", "Bergelombang", "Miring", "Terasering"])
+            kontur = st.selectbox("Kontur Tanah", ["Datar","Bergelombang","Miring-Mendaki", "Miring-Menurun","Terasering"])
             elavasi = st.selectbox("Elevasi", ["Sama Dengan Jalan", "Lebih Rendah", "Lebih Tinggi"])
             
         k1, k2 = st.columns(2)
-        with k1: kontruksi_jalan = st.selectbox("Konstruksi Jalan", ["Aspal","Beton","Paving","Tanah"])
-        with k2: kondisi_jalan = st.selectbox("Kondisi Jalan", ["Baik","Sedang","Buruk","Rusak"])
+        with k1: kontruksi_jalan = st.selectbox("Konstruksi Jalan", ["Aspal","Beton","Paving","Pasir Batu","Tanah", "Rabat", "Lainnya"])
+        with k2: kondisi_jalan = st.selectbox("Kondisi Jalan", ["Baik","Jelek","Sedang"])
         st.markdown('</div>', unsafe_allow_html=True)
 
     # GROUP 3: LEGALITAS
     with st.container():
         st.markdown("---")
         st.markdown("### ⚖️ Legalitas & Lingkungan")
-        dokumen_kepemilikan = st.selectbox("Dokumen", ["SHM","HGB","HPL","Girik/AJB","Lainnya"])
-        pemanfaatan_sekitar = st.selectbox("Pemanfaatan Sekitar", ["Perumahan","Komersial","Campuran","Industri","Lahan Kosong","Pertanian"])
-        jenis_transaksi = st.selectbox("Jenis Transaksi", ["Jual","Sewa","Lelang"])
+        dokumen_kepemilikan = st.selectbox("Dokumen", ["SHM","SHGB","AJB","Girik", "PPJB", "Keterangan Desa/Lurah/Camat", "SHP" , "SHPL", "Lainnya"])
+        pemanfaatan_sekitar = st.selectbox("Pemanfaatan Sekitar", ["Residensial","komersial","Campuran","Industrial", "Perkantoran", "Perkebunan","Pertanian","Lainnya"])
+        jenis_transaksi = st.selectbox("Jenis Transaksi", ["Penawaran Awal/Nego","Penawaran Akhir/Harga Pas","Penawaran Mengengah/Nego Tipis", "Lelang"])
         sumber_data = st.selectbox("Sumber Data", ["Iklan","Survey Lapangan","Agen/PPAT","Lainnya"])
         
         st.markdown("---")
@@ -622,12 +623,12 @@ def explain_categorical_contrast(model, X_row, choices_map, skip_cols=None):
 # Update Choices UI dengan Kategori Standar
 CAT_CHOICES_UI = {
     "elavasi": ["Sama Dengan Jalan", "Lebih Rendah", "Lebih Tinggi"],
-    "kontur": ["Datar", "Bergelombang", "Miring", "Terasering"],
-    "kontruksi_jalan": ["Aspal","Beton","Paving","Tanah"],
-    "kondisi_jalan": ["Baik","Sedang","Buruk","Rusak"],
-    "pemanfaatan_sekitar": ["Perumahan","Komersial","Campuran","Industri","Lahan Kosong","Pertanian"],
-    "dokumen_kepemilikan": ["SHM","HGB","HPL","Girik/AJB","Lainnya"],
-    "jenis_transaksi": ["Jual","Sewa","Lelang"],
+    "kontur": ["Datar","Bergelombang","Miring-Mendaki", "Miring-Menurun","Terasering"],
+    "kontruksi_jalan": ["Aspal","Beton","Paving","Pasir Batu","Tanah", "Rabat", "Lainnya"],
+    "kondisi_jalan": ["Baik","Jelek","Sedang"],
+    "pemanfaatan_sekitar": ["Residensial","komersial","Campuran","Industrial", "Perkantoran", "Perkebunan", "Pertanian", "Lainnya"],
+    "dokumen_kepemilikan": ["SHM","SHGB","AJB","Girik", "PPJB", "Keterangan Desa/Lurah/Camat", "SHP" , "SHPL", "Lainnya"],
+    "jenis_transaksi": ["Penawaran Awal/Nego","Penawaran Akhir/Harga Pas","Penawaran Mengengah/Nego Tipis", "Lelang"],
     "sumber_data": ["Iklan","Survey Lapangan","Agen/PPAT","Lainnya"],
     "nama_cbd": ["Non-CBD/Other"] + [r["cbd"] for r in CBD_POINTS_JAKARTA],
     "provinsi": list(ADDR_TREE.keys()),
@@ -743,7 +744,7 @@ with st.expander("📂 Prediksi Batch (Upload File)", expanded=False):
         st.dataframe(df_in.head(), use_container_width=True)
         
         if st.button("Proses Batch"):
-            defaults_for_missing = {"sumber_data": "Iklan", "elavasi": "Datar", "kontur": "Rata", "kontruksi_jalan": "Aspal", "kondisi_jalan": "Baik", "jenis_transaksi": "Jual", "dokumen_kepemilikan": "SHM", "pemanfaatan_sekitar": "Perumahan", "luas": 100.0, "jarak_ke_jalan": 50.0, "provinsi": "DKI Jakarta", "nama_cbd": "Non-CBD/Other"}
+            defaults_for_missing = {"sumber_data": "Iklan", "elavasi": "Sama Dengan Jalan", "kontur": "Datar", "kontruksi_jalan": "Aspal", "kondisi_jalan": "Baik", "jenis_transaksi": "Penawaran Awal/Nego", "dokumen_kepemilikan": "SHM", "pemanfaatan_sekitar": "Residensial", "luas": 100.0, "jarak_ke_jalan": 50.0, "provinsi": "DKI Jakarta", "nama_cbd": "Non-CBD/Other"}
             for col in defaults_for_missing:
                 if col not in df_in.columns: df_in[col] = defaults_for_missing[col]
             

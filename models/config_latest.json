@@ -3,6 +3,8 @@
   "numeric_feats": [
     "jarak_ke_jalan",
     "luas",
+    "latitude",
+    "longitude",
     "jarak_cbd"
   ],
   "onehot_feats": [
@@ -88,12 +90,14 @@
     ]
   },
   "freq_top_values": {},
-  "algo": "RandomForest",
+  "algo": "XGBoost",
   "params": {
-    "n_estimators": 600,
-    "max_depth": null,
-    "max_features": "sqrt",
-    "min_samples_split": 2,
-    "min_samples_leaf": 1
+    "n_estimators": 800,
+    "learning_rate": 0.05,
+    "max_depth": 8,
+    "subsample": 0.9,
+    "colsample_bytree": 0.9,
+    "reg_lambda": 1.0,
+    "min_child_weight": 1.0
   }
 }
